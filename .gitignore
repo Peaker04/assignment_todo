@@ -50,3 +50,5 @@ app.*.map.json
 # Local agent & tooling
 .agents/
 .mcp.json
+.codex/
+*.exe
