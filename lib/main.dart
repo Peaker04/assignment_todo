@@ -80,6 +80,7 @@ class TodoItem {
   String type;
   bool isCompleted;
   final DateTime createdAt;
+  DateTime? deadline;
 
   TodoItem({
     required this.id,
@@ -88,6 +89,7 @@ class TodoItem {
     required this.date,
     this.type = 'Dễ',
     this.isCompleted = false,
+    this.deadline,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 }
@@ -109,10 +111,7 @@ class TaskFlowApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('vi', 'VN'),
-        Locale('en', 'US'),
-      ],
+      supportedLocales: const [Locale('vi', 'VN'), Locale('en', 'US')],
       locale: const Locale('vi', 'VN'),
       theme: ThemeData(
         useMaterial3: true,
@@ -149,6 +148,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   // Từ khóa tìm kiếm (FR-04)
   String _searchQuery = '';
+  bool _showAddForm = false;
+  DateTime? _deadline;
 
   // Giá trị mặc định cho Dropdown Mức độ
   String _selectedType = 'Dễ';
@@ -233,8 +234,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
             date: date.isNotEmpty ? date : _formatDate(DateTime.now()),
             type: _selectedType,
             isCompleted: false,
+            deadline: _deadline,
           ),
         );
+        _deadline = null;
+        _showAddForm = false;
       });
 
       _titleController.clear();
@@ -248,21 +252,30 @@ class _TodoListScreenState extends State<TodoListScreen> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: AppColors.pureWhite, size: 20.0),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.pureWhite,
+                size: 20.0,
+              ),
               const SizedBox(width: 10.0),
               Expanded(
                 child: Text(
                   'Đã thêm thành công: "$title"',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: AppColors.pureWhite, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: AppColors.pureWhite,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
           backgroundColor: AppColors.primaryBlue,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -283,17 +296,28 @@ class _TodoListScreenState extends State<TodoListScreen> {
       SnackBar(
         content: const Row(
           children: [
-            Icon(Icons.check_circle_rounded, color: AppColors.pureWhite, size: 20.0),
+            Icon(
+              Icons.check_circle_rounded,
+              color: AppColors.pureWhite,
+              size: 20.0,
+            ),
             SizedBox(width: 10.0),
-            Text(
-              'Đã cập nhật trạng thái thành công',
-              style: TextStyle(color: AppColors.pureWhite, fontWeight: FontWeight.w600),
+            Expanded(
+              child: Text(
+                'Đã cập nhật trạng thái thành công',
+                style: TextStyle(
+                  color: AppColors.pureWhite,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
         backgroundColor: AppColors.deepNavy,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
         duration: const Duration(milliseconds: 1500),
       ),
     );
@@ -315,11 +339,16 @@ class _TodoListScreenState extends State<TodoListScreen> {
           'Đã xóa: "${task.title}"',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: AppColors.pureWhite, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            color: AppColors.pureWhite,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         backgroundColor: AppColors.deepNavy,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
         action: SnackBarAction(
           label: 'HOÀN TÁC',
           textColor: AppColors.vibrantOcean,
@@ -340,6 +369,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final editContentCtrl = TextEditingController(text: task.content);
     final editDateCtrl = TextEditingController(text: task.date);
     String editType = task.type;
+    DateTime? editDeadline = task.deadline;
     final editFormKey = GlobalKey<FormState>();
 
     showModalBottomSheet(
@@ -357,7 +387,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 padding: const EdgeInsets.fromLTRB(22.0, 16.0, 22.0, 24.0),
                 decoration: const BoxDecoration(
                   color: AppColors.pureWhite,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28.0)),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(28.0),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Color(0x1A03045E),
@@ -398,7 +430,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
+                              icon: const Icon(
+                                Icons.close_rounded,
+                                color: AppColors.textMuted,
+                              ),
                               tooltip: 'Đóng',
                               onPressed: () => Navigator.pop(ctx),
                             ),
@@ -408,14 +443,22 @@ class _TodoListScreenState extends State<TodoListScreen> {
                         // Tiêu đề
                         TextFormField(
                           controller: editTitleCtrl,
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tiêu đề công việc!' : null,
-                          decoration: _inputDecoration(label: 'Tiêu đề', hint: 'Nhập tên công việc'),
+                          validator: (v) => (v == null || v.trim().isEmpty)
+                              ? 'Vui lòng nhập tiêu đề công việc!'
+                              : null,
+                          decoration: _inputDecoration(
+                            label: 'Tiêu đề',
+                            hint: 'Nhập tên công việc',
+                          ),
                         ),
                         const SizedBox(height: 12.0),
                         // Nội dung
                         TextFormField(
                           controller: editContentCtrl,
-                          decoration: _inputDecoration(label: 'Nội dung', hint: 'Nhập mô tả chi tiết công việc'),
+                          decoration: _inputDecoration(
+                            label: 'Nội dung',
+                            hint: 'Nhập mô tả chi tiết công việc',
+                          ),
                         ),
                         const SizedBox(height: 12.0),
                         // Ngày thực hiện
@@ -442,8 +485,19 @@ class _TodoListScreenState extends State<TodoListScreen> {
                           decoration: _inputDecoration(
                             label: 'Ngày thực hiện',
                             hint: 'dd/MM/yyyy',
-                            suffixIcon: const Icon(Icons.calendar_today_rounded, size: 18.0, color: AppColors.primaryBlue),
+                            suffixIcon: const Icon(
+                              Icons.calendar_today_rounded,
+                              size: 18.0,
+                              color: AppColors.primaryBlue,
+                            ),
                           ),
+                        ),
+                        const SizedBox(height: 12.0),
+                        _buildDeadlineField(
+                          fieldContext: modalContext,
+                          value: editDeadline,
+                          onChanged: (value) =>
+                              setModalState(() => editDeadline = value),
                         ),
                         const SizedBox(height: 12.0),
                         // Mức độ
@@ -451,17 +505,25 @@ class _TodoListScreenState extends State<TodoListScreen> {
                           isExpanded: true,
                           initialValue: editType,
                           items: _typeOptions
-                              .map((t) => DropdownMenuItem(
-                                    value: t,
-                                    child: Text(t, style: const TextStyle(fontSize: 14.0)),
-                                  ))
+                              .map(
+                                (t) => DropdownMenuItem(
+                                  value: t,
+                                  child: Text(
+                                    t,
+                                    style: const TextStyle(fontSize: 14.0),
+                                  ),
+                                ),
+                              )
                               .toList(),
                           onChanged: (val) {
                             if (val != null) {
                               setModalState(() => editType = val);
                             }
                           },
-                          decoration: _inputDecoration(label: 'Mức độ', hint: 'Chọn mức độ'),
+                          decoration: _inputDecoration(
+                            label: 'Mức độ',
+                            hint: 'Chọn mức độ',
+                          ),
                         ),
                         const SizedBox(height: 22.0),
                         // Nút Lưu thay đổi mềm mại
@@ -475,7 +537,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                             borderRadius: BorderRadius.circular(16.0),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryBlue.withValues(alpha: 0.28),
+                                color: AppColors.primaryBlue.withValues(
+                                  alpha: 0.28,
+                                ),
                                 blurRadius: 14.0,
                                 offset: const Offset(0, 5),
                               ),
@@ -483,17 +547,21 @@ class _TodoListScreenState extends State<TodoListScreen> {
                           ),
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              if (editFormKey.currentState?.validate() ?? false) {
+                              if (editFormKey.currentState?.validate() ??
+                                  false) {
                                 setState(() {
                                   task.title = editTitleCtrl.text.trim();
                                   task.content = editContentCtrl.text.trim();
                                   task.date = editDateCtrl.text.trim();
                                   task.type = editType;
+                                  task.deadline = editDeadline;
                                 });
                                 Navigator.pop(ctx);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Đã cập nhật công việc thành công!'),
+                                    content: Text(
+                                      'Đã cập nhật công việc thành công!',
+                                    ),
                                     backgroundColor: AppColors.editGreen,
                                     duration: Duration(seconds: 2),
                                   ),
@@ -501,13 +569,23 @@ class _TodoListScreenState extends State<TodoListScreen> {
                               }
                             },
                             icon: const Icon(Icons.save_rounded, size: 20.0),
-                            label: const Text('LƯU THAY ĐỔI', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.3)),
+                            label: const Text(
+                              'LƯU THAY ĐỔI',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.transparent,
                               shadowColor: Colors.transparent,
                               foregroundColor: AppColors.pureWhite,
-                              padding: const EdgeInsets.symmetric(vertical: 14.0),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14.0,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.0),
+                              ),
                             ),
                           ),
                         ),
@@ -532,38 +610,68 @@ class _TodoListScreenState extends State<TodoListScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22.0)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22.0),
+        ),
         title: const Row(
           children: [
-            Icon(Icons.delete_sweep_rounded, color: AppColors.deleteRed, size: 24.0),
+            Icon(
+              Icons.delete_sweep_rounded,
+              color: AppColors.deleteRed,
+              size: 24.0,
+            ),
             SizedBox(width: 10.0),
             Text(
               'Dọn dẹp công việc',
-              style: TextStyle(color: AppColors.deepNavy, fontSize: 18.0, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: AppColors.deepNavy,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
         content: Text(
           'Bạn có chắc chắn muốn xóa tất cả $completedCount công việc đã hoàn thành?',
-          style: const TextStyle(color: AppColors.deepNavy, fontSize: 14.5, height: 1.4),
+          style: const TextStyle(
+            color: AppColors.deepNavy,
+            fontSize: 14.5,
+            height: 1.4,
+          ),
         ),
         actionsPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 10.0,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
             ),
-            child: const Text('HỦY', style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'HỦY',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.deleteRed,
               foregroundColor: AppColors.pureWhite,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10.0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18.0,
+                vertical: 10.0,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
             ),
             onPressed: () {
               Navigator.pop(ctx);
@@ -573,15 +681,22 @@ class _TodoListScreenState extends State<TodoListScreen> {
               ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Đã dọn dẹp $completedCount công việc đã hoàn thành!'),
+                  content: Text(
+                    'Đã dọn dẹp $completedCount công việc đã hoàn thành!',
+                  ),
                   backgroundColor: AppColors.deepNavy,
                   behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16.0),
+                  ),
                   duration: const Duration(seconds: 2),
                 ),
               );
             },
-            child: const Text('XÓA HẾT', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'XÓA HẾT',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -605,7 +720,13 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
     if (_searchQuery.trim().isNotEmpty) {
       final q = _searchQuery.trim().toLowerCase();
-      list = list.where((t) => t.title.toLowerCase().contains(q) || t.content.toLowerCase().contains(q)).toList();
+      list = list
+          .where(
+            (t) =>
+                t.title.toLowerCase().contains(q) ||
+                t.content.toLowerCase().contains(q),
+          )
+          .toList();
     }
     return list;
   }
@@ -655,15 +776,21 @@ class _TodoListScreenState extends State<TodoListScreen> {
       hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13.0),
       filled: true,
       fillColor: AppColors.iceBlueTint.withValues(alpha: 0.28),
-      contentPadding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 16.0, vertical: 13.0),
+      contentPadding:
+          contentPadding ??
+          const EdgeInsets.symmetric(horizontal: 16.0, vertical: 13.0),
       suffixIcon: suffixIcon,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
-        borderSide: BorderSide(color: AppColors.softSky.withValues(alpha: 0.35)),
+        borderSide: BorderSide(
+          color: AppColors.softSky.withValues(alpha: 0.35),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
-        borderSide: BorderSide(color: AppColors.softSky.withValues(alpha: 0.35)),
+        borderSide: BorderSide(
+          color: AppColors.softSky.withValues(alpha: 0.35),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16.0),
@@ -741,45 +868,53 @@ class _TodoListScreenState extends State<TodoListScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 7.0,
-                                height: 7.0,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.vibrantOcean,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 7.0,
+                                  height: 7.0,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.vibrantOcean,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 6.0),
-                              const Text(
-                                'TIẾN ĐỘ CÔNG VIỆC',
-                                style: TextStyle(
-                                  color: AppColors.iceBlueTint,
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.0,
+                                const SizedBox(width: 6.0),
+                                const Expanded(
+                                  child: Text(
+                                    'TIẾN ĐỘ CÔNG VIỆC',
+                                    style: TextStyle(
+                                      color: AppColors.iceBlueTint,
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1.0,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6.0),
-                          Text(
-                            '$completed / $total việc hoàn thành',
-                            style: const TextStyle(
-                              color: AppColors.pureWhite,
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.3,
+                              ],
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 6.0),
+                            Text(
+                              '$completed / $total việc hoàn thành',
+                              style: const TextStyle(
+                                color: AppColors.pureWhite,
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 12.0),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14.0,
+                          vertical: 6.0,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.pureWhite.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(16.0),
@@ -807,8 +942,12 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 8.0,
-                      backgroundColor: AppColors.pureWhite.withValues(alpha: 0.2),
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.vibrantOcean),
+                      backgroundColor: AppColors.pureWhite.withValues(
+                        alpha: 0.2,
+                      ),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.vibrantOcean,
+                      ),
                     ),
                   ),
                 ],
@@ -817,6 +956,87 @@ class _TodoListScreenState extends State<TodoListScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  static String _formatDeadline(DateTime value) =>
+      '${_formatDate(value)} ${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+
+  Widget _buildDeadlineField({
+    required BuildContext fieldContext,
+    required DateTime? value,
+    required ValueChanged<DateTime?> onChanged,
+  }) {
+    return Row(
+      children: [
+        Expanded(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16.0),
+            onTap: () async {
+              final initial = value ?? DateTime.now();
+              final date = await showDatePicker(
+                context: fieldContext,
+                initialDate: initial,
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2100),
+                helpText: 'CHỌN HẠN CHÓT',
+                cancelText: 'HỦY',
+                confirmText: 'XÁC NHẬN',
+              );
+              if (date == null || !fieldContext.mounted) return;
+              final time = await showTimePicker(
+                context: fieldContext,
+                initialTime: TimeOfDay.fromDateTime(initial),
+                helpText: 'CHỌN GIỜ HẠN CHÓT',
+                cancelText: 'HỦY',
+                confirmText: 'XÁC NHẬN',
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(alwaysUse24HourFormat: true),
+                  child: child!,
+                ),
+              );
+              if (time == null || !fieldContext.mounted) return;
+              onChanged(
+                DateTime(
+                  date.year,
+                  date.month,
+                  date.day,
+                  time.hour,
+                  time.minute,
+                ),
+              );
+            },
+            child: InputDecorator(
+              decoration: _inputDecoration(
+                label: 'Hạn chót',
+                hint: '',
+                suffixIcon: const Icon(
+                  Icons.schedule_rounded,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+              child: Text(
+                value == null
+                    ? 'Chọn hạn chót (không bắt buộc)'
+                    : _formatDeadline(value),
+                style: TextStyle(
+                  color: value == null
+                      ? AppColors.textMuted
+                      : AppColors.deepNavy,
+                  fontSize: 14.0,
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (value != null)
+          IconButton(
+            tooltip: 'Xóa hạn chót',
+            icon: const Icon(Icons.clear_rounded),
+            onPressed: () => onChanged(null),
+          ),
+      ],
     );
   }
 
@@ -855,17 +1075,32 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     color: AppColors.iceBlueTint.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(10.0),
                   ),
-                  child: const Icon(Icons.add_task_rounded, color: AppColors.primaryBlue, size: 18.0),
+                  child: const Icon(
+                    Icons.add_task_rounded,
+                    color: AppColors.primaryBlue,
+                    size: 18.0,
+                  ),
                 ),
                 const SizedBox(width: 10.0),
-                const Text(
-                  'Tạo công việc mới',
-                  style: TextStyle(
-                    color: AppColors.deepNavy,
-                    fontSize: 16.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
+                const Expanded(
+                  child: Text(
+                    'Tạo công việc mới',
+                    style: TextStyle(
+                      color: AppColors.deepNavy,
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
                   ),
+                ),
+                IconButton(
+                  tooltip: 'Đóng form tạo công việc',
+                  icon: const Icon(Icons.close_rounded),
+                  color: AppColors.textMuted,
+                  onPressed: () {
+                    FocusScope.of(context).unfocus();
+                    setState(() => _showAddForm = false);
+                  },
                 ),
               ],
             ),
@@ -881,7 +1116,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 }
                 return null;
               },
-              style: const TextStyle(color: AppColors.deepNavy, fontSize: 14.5, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: AppColors.deepNavy,
+                fontSize: 14.5,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: _inputDecoration(
                 label: 'Tiêu đề',
                 hint: 'Nhập tên công việc...',
@@ -926,11 +1165,17 @@ class _TodoListScreenState extends State<TodoListScreen> {
                         });
                       }
                     },
-                    style: const TextStyle(color: AppColors.deepNavy, fontSize: 14.0),
+                    style: const TextStyle(
+                      color: AppColors.deepNavy,
+                      fontSize: 14.0,
+                    ),
                     decoration: _inputDecoration(
                       label: 'Ngày thực hiện',
                       hint: 'dd/MM/yyyy',
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14.0,
+                        vertical: 12.0,
+                      ),
                       suffixIcon: const Icon(
                         Icons.calendar_today_rounded,
                         size: 18.0,
@@ -947,14 +1192,16 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     isExpanded: true,
                     initialValue: _selectedType,
                     items: _typeOptions
-                        .map((t) => DropdownMenuItem(
-                              value: t,
-                              child: Text(
-                                t,
-                                style: const TextStyle(fontSize: 14.0),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ))
+                        .map(
+                          (t) => DropdownMenuItem(
+                            value: t,
+                            child: Text(
+                              t,
+                              style: const TextStyle(fontSize: 14.0),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        )
                         .toList(),
                     onChanged: (val) {
                       if (val != null) {
@@ -964,11 +1211,20 @@ class _TodoListScreenState extends State<TodoListScreen> {
                     decoration: _inputDecoration(
                       label: 'Mức độ',
                       hint: 'Chọn mức độ',
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14.0,
+                        vertical: 12.0,
+                      ),
                     ),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12.0),
+            _buildDeadlineField(
+              fieldContext: context,
+              value: _deadline,
+              onChanged: (value) => setState(() => _deadline = value),
             ),
             const SizedBox(height: 18.0),
 
@@ -1048,11 +1304,22 @@ class _TodoListScreenState extends State<TodoListScreen> {
         style: const TextStyle(fontSize: 14.0, color: AppColors.deepNavy),
         decoration: InputDecoration(
           hintText: 'Tìm kiếm công việc theo từ khóa...',
-          hintStyle: const TextStyle(fontSize: 13.0, color: AppColors.textMuted),
-          prefixIcon: const Icon(Icons.search_rounded, size: 20.0, color: AppColors.primaryBlue),
+          hintStyle: const TextStyle(
+            fontSize: 13.0,
+            color: AppColors.textMuted,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            size: 20.0,
+            color: AppColors.primaryBlue,
+          ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, size: 18.0, color: AppColors.textMuted),
+                  icon: const Icon(
+                    Icons.clear_rounded,
+                    size: 18.0,
+                    color: AppColors.textMuted,
+                  ),
                   tooltip: 'Xóa tìm kiếm',
                   onPressed: () {
                     _searchController.clear();
@@ -1063,7 +1330,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 13.0),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 13.0,
+          ),
         ),
       ),
     );
@@ -1098,9 +1368,12 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOutCubic,
+                  constraints: const BoxConstraints(minHeight: 48.0),
                   padding: const EdgeInsets.symmetric(vertical: 9.0),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppColors.pureWhite : Colors.transparent,
+                    color: isSelected
+                        ? AppColors.pureWhite
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(16.0),
                     boxShadow: isSelected
                         ? [
@@ -1115,17 +1388,27 @@ class _TodoListScreenState extends State<TodoListScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        filter.label,
-                        style: TextStyle(
-                          color: isSelected ? AppColors.primaryBlue : AppColors.textMuted,
-                          fontSize: 13.0,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          filter.label,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: isSelected
+                                ? AppColors.primaryBlue
+                                : AppColors.textMuted,
+                            fontSize: 13.0,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6.0),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6.5, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6.5,
+                          vertical: 1.5,
+                        ),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.primaryBlue
@@ -1135,7 +1418,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                         child: Text(
                           '$count',
                           style: TextStyle(
-                            color: isSelected ? AppColors.pureWhite : AppColors.textMuted,
+                            color: isSelected
+                                ? AppColors.pureWhite
+                                : AppColors.textMuted,
                             fontSize: 11.0,
                             fontWeight: FontWeight.bold,
                           ),
@@ -1173,9 +1458,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: isDone
-                ? const Color(0x0503045E)
-                : const Color(0x0C03045E),
+            color: isDone ? const Color(0x0503045E) : const Color(0x0C03045E),
             blurRadius: isDone ? 8.0 : 16.0,
             offset: Offset(0, isDone ? 2 : 5),
           ),
@@ -1189,7 +1472,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
             // Bên trái: Checkbox tròn mềm mại (Circular Checkbox - Khắc phục cảm giác cứng nhắc)
             IconButton(
               icon: Icon(
-                isDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                isDone
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked_rounded,
                 color: isDone ? AppColors.vibrantOcean : AppColors.softSky,
                 size: 26.0,
               ),
@@ -1213,19 +1498,32 @@ class _TodoListScreenState extends State<TodoListScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: isDone ? AppColors.deepNavy.withValues(alpha: 0.4) : AppColors.deepNavy,
+                              color: isDone
+                                  ? AppColors.deepNavy.withValues(alpha: 0.4)
+                                  : AppColors.deepNavy,
                               fontSize: 16.0,
-                              fontWeight: isDone ? FontWeight.w400 : FontWeight.w700,
-                              decoration: isDone ? TextDecoration.lineThrough : null,
-                              decorationColor: AppColors.deepNavy.withValues(alpha: 0.4),
-                              fontStyle: isDone ? FontStyle.italic : FontStyle.normal,
+                              fontWeight: isDone
+                                  ? FontWeight.w400
+                                  : FontWeight.w700,
+                              decoration: isDone
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              decorationColor: AppColors.deepNavy.withValues(
+                                alpha: 0.4,
+                              ),
+                              fontStyle: isDone
+                                  ? FontStyle.italic
+                                  : FontStyle.normal,
                               height: 1.3,
                             ),
                           ),
                         ),
                         // Badge Mức độ ưu tiên mềm mại dạng Capsule
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9.0, vertical: 3.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9.0,
+                            vertical: 3.0,
+                          ),
                           decoration: BoxDecoration(
                             color: _getTypeBgColor(task.type),
                             borderRadius: BorderRadius.circular(12.0),
@@ -1250,7 +1548,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: isDone ? AppColors.textMuted.withValues(alpha: 0.5) : AppColors.textMuted,
+                          color: isDone
+                              ? AppColors.textMuted.withValues(alpha: 0.5)
+                              : AppColors.textMuted,
                           fontSize: 13.5,
                           fontStyle: FontStyle.italic,
                           height: 1.3,
@@ -1258,6 +1558,20 @@ class _TodoListScreenState extends State<TodoListScreen> {
                       ),
                     ],
 
+                    if (task.deadline != null) ...[
+                      const SizedBox(height: 8.0),
+                      Text(
+                        '${!isDone && task.deadline!.isBefore(DateTime.now()) ? 'Quá hạn · ' : ''}Hạn chót: ${_formatDeadline(task.deadline!)}',
+                        style: TextStyle(
+                          color:
+                              !isDone && task.deadline!.isBefore(DateTime.now())
+                              ? AppColors.priorityHardText
+                              : AppColors.textMuted,
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8.0),
 
                     // Dòng dưới: Ngày thực hiện & Các nút thao tác
@@ -1276,7 +1590,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                             Text(
                               task.date,
                               style: TextStyle(
-                                color: AppColors.textMuted.withValues(alpha: 0.85),
+                                color: AppColors.textMuted.withValues(
+                                  alpha: 0.85,
+                                ),
                                 fontSize: 12.0,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1297,7 +1613,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(7.0),
                                   decoration: BoxDecoration(
-                                    color: AppColors.editGreen.withValues(alpha: 0.1),
+                                    color: AppColors.editGreen.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -1319,7 +1637,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(7.0),
                                   decoration: BoxDecoration(
-                                    color: AppColors.deleteRed.withValues(alpha: 0.1),
+                                    color: AppColors.deleteRed.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -1446,7 +1766,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
             // Nút Dọn dẹp việc đã xong (FR-05)
             if (completedCount > 0)
               IconButton(
-                icon: const Icon(Icons.delete_sweep_rounded, color: AppColors.deleteRed),
+                icon: const Icon(
+                  Icons.delete_sweep_rounded,
+                  color: AppColors.deleteRed,
+                ),
                 tooltip: 'Dọn dẹp việc đã xong',
                 onPressed: _clearCompletedTasks,
               ),
@@ -1489,12 +1812,28 @@ class _TodoListScreenState extends State<TodoListScreen> {
               ),
               // 2. Khu vực Form nhập liệu (FR-01, NFR-03 - Soft Card)
               SliverToBoxAdapter(
-                child: _buildAddTaskForm(),
+                child: _showAddForm
+                    ? _buildAddTaskForm()
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        child: FilledButton.icon(
+                          onPressed: () => setState(() => _showAddForm = true),
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Tạo công việc'),
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size.fromHeight(48.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                          ),
+                        ),
+                      ),
               ),
               // 3. Thanh tìm kiếm theo từ khóa (FR-04 - Soft Capsule)
-              SliverToBoxAdapter(
-                child: _buildSearchBar(),
-              ),
+              SliverToBoxAdapter(child: _buildSearchBar()),
               // 4. Thanh lọc trạng thái công việc (FR-03 - Soft Pill Segmented)
               SliverToBoxAdapter(
                 child: _buildFilterChips(
