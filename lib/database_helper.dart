@@ -170,15 +170,13 @@ class DatabaseHelper {
   }
 
   // Testing Support
-  Future<void> resetForTesting() async {
+  Future<void> resetForTesting([String? dbName]) async {
     if (_database != null && _database!.isOpen) {
       await _database!.close();
     }
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'test_taskflow.db');
-    await deleteDatabase(path);
+    final targetPath = dbName ?? inMemoryDatabasePath;
     _database = await openDatabase(
-      path,
+      targetPath,
       version: 1,
       onCreate: _onCreate,
     );
