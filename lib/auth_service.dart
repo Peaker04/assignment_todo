@@ -97,6 +97,7 @@ class AuthService {
     });
 
     // Auto log in newly registered user
+    // Auto log in newly registered user
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyIsLoggedIn, true);
     await prefs.setString(_keyUserId, userId);

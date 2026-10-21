@@ -1,6 +1,7 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class DatabaseHelper {
@@ -18,6 +19,11 @@ class DatabaseHelper {
   Future<Database> _initDatabase([String dbName = 'taskflow.db']) async {
     if (kIsWeb) {
       databaseFactory = databaseFactoryFfiWeb;
+    } else if (Platform.isWindows || Platform.isLinux) {
+      if (databaseFactoryOrNull == null) {
+        sqfliteFfiInit();
+        databaseFactory = databaseFactoryFfi;
+      }
     }
 
     final dbPath = await getDatabasesPath();

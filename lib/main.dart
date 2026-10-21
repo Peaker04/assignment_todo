@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'database_helper.dart';
+import 'auth_service.dart';
+import 'login_screen.dart';
 
-void main() {
-  runApp(const TaskFlowApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final isLoggedIn = await AuthService.instance.isLoggedIn();
+  final userId = await AuthService.instance.getCurrentUserId();
+  final username = await AuthService.instance.getCurrentUsername();
+
+  runApp(TaskFlowApp(
+    initialLoggedIn: isLoggedIn,
+    initialUserId: userId,
+    initialUsername: username,
+  ));
 }
 
 // ============================================================================
@@ -92,13 +104,91 @@ class TodoItem {
     this.deadline,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
+
+  Map<String, dynamic> toMap(String userId) {
+    return {
+      'id': id,
+      'user_id': userId,
+      'title': title,
+      'content': content,
+      'date': date,
+      'type': type,
+      'is_completed': isCompleted ? 1 : 0,
+      'created_at': createdAt.toIso8601String(),
+      'deadline': deadline?.toIso8601String(),
+    };
+  }
+
+  factory TodoItem.fromMap(Map<String, dynamic> map) {
+    return TodoItem(
+      id: map['id'] as String,
+      title: map['title'] as String,
+      content: (map['content'] as String?) ?? '',
+      date: map['date'] as String,
+      type: (map['type'] as String?) ?? 'Dễ',
+      isCompleted: (map['is_completed'] as int? ?? 0) == 1,
+      createdAt: map['created_at'] != null ? DateTime.tryParse(map['created_at'] as String) : null,
+      deadline: map['deadline'] != null ? DateTime.tryParse(map['deadline'] as String) : null,
+    );
+  }
 }
 
 // ============================================================================
 // 3. ROOT WIDGET (Hỗ trợ Đầy đủ Bản địa hóa Tiếng Việt - NFR-01)
 // ============================================================================
-class TaskFlowApp extends StatelessWidget {
-  const TaskFlowApp({super.key});
+class TaskFlowApp extends StatefulWidget {
+  final bool? initialLoggedIn;
+  final String? initialUserId;
+  final String? initialUsername;
+  final bool persistToDatabase;
+
+  const TaskFlowApp({
+    super.key,
+    this.initialLoggedIn,
+    this.initialUserId,
+    this.initialUsername,
+    this.persistToDatabase = true,
+  });
+
+  @override
+  State<TaskFlowApp> createState() => _TaskFlowAppState();
+}
+
+class _TaskFlowAppState extends State<TaskFlowApp> {
+  late bool _isLoggedIn;
+  String? _userId;
+  String? _username;
+
+  @override
+  void initState() {
+    super.initState();
+    _isLoggedIn = widget.initialLoggedIn ?? true;
+    _userId = widget.initialUserId ?? 'admin_user_01';
+    _username = widget.initialUsername ?? 'admin';
+  }
+
+  void _onLoginSuccess() async {
+    final uid = await AuthService.instance.getCurrentUserId();
+    final uname = await AuthService.instance.getCurrentUsername();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = true;
+        _userId = uid ?? 'admin_user_01';
+        _username = uname ?? 'admin';
+      });
+    }
+  }
+
+  void _onLogout() async {
+    await AuthService.instance.logout();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = false;
+        _userId = null;
+        _username = null;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +212,14 @@ class TaskFlowApp extends StatelessWidget {
           surface: AppColors.pureWhite,
         ),
       ),
-      home: const TodoListScreen(),
+      home: _isLoggedIn
+          ? TodoListScreen(
+              userId: _userId ?? 'admin_user_01',
+              username: _username ?? 'admin',
+              onLogout: _onLogout,
+              persistToDatabase: widget.persistToDatabase,
+            )
+          : LoginScreen(onLoginSuccess: _onLoginSuccess),
     );
   }
 }
@@ -131,7 +228,18 @@ class TaskFlowApp extends StatelessWidget {
 // 4. MAIN SCREEN (StatefulWidget - Local State Only)
 // ============================================================================
 class TodoListScreen extends StatefulWidget {
-  const TodoListScreen({super.key});
+  final String userId;
+  final String username;
+  final VoidCallback? onLogout;
+  final bool persistToDatabase;
+
+  const TodoListScreen({
+    super.key,
+    this.userId = 'admin_user_01',
+    this.username = 'admin',
+    this.onLogout,
+    this.persistToDatabase = true,
+  });
 
   @override
   State<TodoListScreen> createState() => _TodoListScreenState();
@@ -202,6 +310,73 @@ class _TodoListScreenState extends State<TodoListScreen> {
     _dateController = TextEditingController(text: _formatDate(DateTime.now()));
     _searchController = TextEditingController();
     _titleFocusNode = FocusNode();
+    _loadTasksFromDatabase();
+  }
+
+  Future<void> _loadTasksFromDatabase() async {
+    if (!widget.persistToDatabase) return;
+    try {
+      final rows = await DatabaseHelper.instance.getTasksByUserId(widget.userId);
+      if (!mounted) return;
+      if (rows.isNotEmpty) {
+        setState(() {
+          _tasks.clear();
+          for (final r in rows) {
+            _tasks.add(TodoItem.fromMap(r));
+          }
+        });
+      }
+    } catch (_) {}
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22.0),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.logout_rounded, color: AppColors.deleteRed, size: 24.0),
+            SizedBox(width: 10.0),
+            Text(
+              'Đăng xuất',
+              style: TextStyle(
+                color: AppColors.deepNavy,
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản "${widget.username}"?',
+          style: const TextStyle(
+            color: AppColors.deepNavy,
+            fontSize: 14.5,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('HỦY', style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              widget.onLogout?.call();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.deleteRed,
+              foregroundColor: AppColors.pureWhite,
+            ),
+            child: const Text('ĐĂNG XUẤT', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -224,22 +399,27 @@ class _TodoListScreenState extends State<TodoListScreen> {
       final String content = _contentController.text.trim();
       final String date = _dateController.text.trim();
 
+      final newItem = TodoItem(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        title: title,
+        content: content,
+        date: date.isNotEmpty ? date : _formatDate(DateTime.now()),
+        type: _selectedType,
+        isCompleted: false,
+        deadline: _deadline,
+      );
+
       setState(() {
-        _tasks.insert(
-          0,
-          TodoItem(
-            id: DateTime.now().microsecondsSinceEpoch.toString(),
-            title: title,
-            content: content,
-            date: date.isNotEmpty ? date : _formatDate(DateTime.now()),
-            type: _selectedType,
-            isCompleted: false,
-            deadline: _deadline,
-          ),
-        );
+        _tasks.insert(0, newItem);
         _deadline = null;
         _showAddForm = false;
       });
+
+      if (widget.persistToDatabase) {
+        try {
+          DatabaseHelper.instance.insertTask(newItem.toMap(widget.userId));
+        } catch (_) {}
+      }
 
       _titleController.clear();
       _contentController.clear();
@@ -288,6 +468,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
       final int index = _tasks.indexWhere((item) => item.id == id);
       if (index != -1) {
         _tasks[index].isCompleted = !_tasks[index].isCompleted;
+        if (widget.persistToDatabase) {
+          try {
+            DatabaseHelper.instance.updateTask(_tasks[index].toMap(widget.userId));
+          } catch (_) {}
+        }
       }
     });
 
@@ -331,6 +516,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
     setState(() {
       _tasks.removeAt(originalIndex);
     });
+    if (widget.persistToDatabase) {
+      try {
+        DatabaseHelper.instance.deleteTask(task.id);
+      } catch (_) {}
+    }
 
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -356,6 +546,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
             setState(() {
               _tasks.insert(originalIndex, task);
             });
+            if (widget.persistToDatabase) {
+              try {
+                DatabaseHelper.instance.insertTask(task.toMap(widget.userId));
+              } catch (_) {}
+            }
           },
         ),
         duration: const Duration(seconds: 4),
@@ -556,6 +751,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                   task.type = editType;
                                   task.deadline = editDeadline;
                                 });
+                                if (widget.persistToDatabase) {
+                                  try {
+                                    DatabaseHelper.instance.updateTask(task.toMap(widget.userId));
+                                  } catch (_) {}
+                                }
                                 Navigator.pop(ctx);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
@@ -678,6 +878,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
               setState(() {
                 _tasks.removeWhere((t) => t.isCompleted);
               });
+              if (widget.persistToDatabase) {
+                try {
+                  DatabaseHelper.instance.clearCompletedTasks(widget.userId);
+                } catch (_) {}
+              }
               ScaffoldMessenger.of(context).clearSnackBars();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -1753,6 +1958,13 @@ class _TodoListScreenState extends State<TodoListScreen> {
           elevation: 0,
           scrolledUnderElevation: 0,
           centerTitle: true,
+          leading: widget.onLogout != null
+              ? IconButton(
+                  icon: const Icon(Icons.logout_rounded, color: AppColors.deleteRed),
+                  tooltip: 'Đăng xuất (${widget.username})',
+                  onPressed: _showLogoutDialog,
+                )
+              : null,
           title: const Text(
             'TODOLIST',
             style: TextStyle(

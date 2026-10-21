@@ -1,9 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import 'package:assignment_todo/database_helper.dart';
+import 'package:assignment_todo/auth_service.dart';
 import 'package:assignment_todo/main.dart';
 
 void main() {
+  setUpAll(() {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await DatabaseHelper.instance.resetForTesting();
+  });
+
+  tearDown(() async {
+    await DatabaseHelper.instance.close();
+  });
+
   testWidgets('Create task without deadline on a narrow mobile screen', (
     tester,
   ) async {
@@ -14,7 +32,7 @@ void main() {
       tester.view.resetDevicePixelRatio();
       tester.view.resetViewInsets();
     });
-    await tester.pumpWidget(const TaskFlowApp());
+    await tester.pumpWidget(const TaskFlowApp(persistToDatabase: false));
     await tester.tap(find.text('Tạo công việc'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(
@@ -49,7 +67,7 @@ void main() {
       });
 
       // Khởi chạy ứng dụng
-      await tester.pumpWidget(const TaskFlowApp());
+      await tester.pumpWidget(const TaskFlowApp(persistToDatabase: false));
       await tester.pumpAndSettle();
 
       // 1. Kiểm tra Tiêu đề & Header Tiếng Việt chuẩn (không chêm tiếng Anh)
@@ -173,7 +191,7 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    await tester.pumpWidget(const TaskFlowApp());
+    await tester.pumpWidget(const TaskFlowApp(persistToDatabase: false));
     await tester.pumpAndSettle();
 
     // 1. Thử mở BottomSheet chỉnh sửa (Edit)
@@ -245,5 +263,66 @@ void main() {
 
     // Task hoàn thành đã bị xóa
     expect(find.text('Học Java Chuyên Sâu'), findsNothing);
+  });
+
+  testWidgets('Full Auth flow: Login, view tasks, and Logout back to LoginScreen', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    // 1. Khởi động app với trạng thái chưa đăng nhập
+    await tester.pumpWidget(const TaskFlowApp(initialLoggedIn: false));
+    await tester.pumpAndSettle();
+
+    // Kiểm tra màn hình đăng nhập hiển thị
+    expect(find.text('TaskFlow'), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'Đăng nhập'), findsOneWidget);
+    expect(find.text('TODOLIST'), findsNothing);
+
+    // 2. Bấm "Tài khoản mẫu (Test nhanh)" và bấm "Đăng nhập"
+    await tester.tap(find.text('Tài khoản mẫu (Test nhanh)'));
+    await tester.pumpAndSettle();
+
+    await tester.runAsync(() async {
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Đăng nhập'));
+      for (int i = 0; i < 50; i++) {
+        await Future.delayed(const Duration(milliseconds: 20));
+        if (await AuthService.instance.isLoggedIn()) break;
+      }
+      await Future.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    // 3. Đã vào màn hình TodoListScreen
+    expect(find.text('TODOLIST'), findsOneWidget);
+    expect(find.byIcon(Icons.logout_rounded), findsOneWidget);
+
+    // 4. Bấm nút Đăng xuất
+    await tester.tap(find.byIcon(Icons.logout_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Đăng xuất'), findsOneWidget);
+    expect(find.text('ĐĂNG XUẤT'), findsOneWidget);
+
+    // 5. Xác nhận đăng xuất
+    await tester.runAsync(() async {
+      await tester.tap(find.text('ĐĂNG XUẤT'));
+      for (int i = 0; i < 50; i++) {
+        await Future.delayed(const Duration(milliseconds: 20));
+        if (!await AuthService.instance.isLoggedIn()) break;
+      }
+      await Future.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    // 6. Quay lại màn hình LoginScreen
+    expect(find.text('TaskFlow'), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'Đăng nhập'), findsOneWidget);
+    expect(find.text('TODOLIST'), findsNothing);
   });
 }
