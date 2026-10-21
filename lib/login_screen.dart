@@ -109,21 +109,16 @@ class _LoginScreenState extends State<LoginScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: 400),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x0D000000),
-                      blurRadius: 28,
-                      offset: Offset(0, 10),
-                    ),
-                    BoxShadow(
-                      color: Color(0x05000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
+                      color: Color(0x0A000000),
+                      blurRadius: 20,
+                      offset: Offset(0, 6),
                     ),
                   ],
                 ),
@@ -132,26 +127,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Apple HIG Icon Badge
                     Center(
                       child: Container(
-                        width: 68,
-                        height: 68,
+                        width: 64,
+                        height: 64,
                         decoration: BoxDecoration(
                           color: systemBlue,
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x33007AFF),
-                              blurRadius: 16,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(
                           CupertinoIcons.checkmark_alt,
                           color: Colors.white,
-                          size: 38,
+                          size: 36,
                         ),
                       ),
                     ),
@@ -160,10 +147,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'TaskFlow',
                         style: TextStyle(
-                          fontSize: 27,
+                          fontSize: 26,
                           fontWeight: FontWeight.w700,
                           color: systemLabel,
-                          letterSpacing: -0.6,
+                          letterSpacing: -0.5,
                         ),
                       ),
                     ),
@@ -177,13 +164,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: const TextStyle(
                           fontSize: 14,
                           color: systemTertiary,
-                          height: 1.3,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 20),
 
-                    // iOS Sliding Segmented Control
                     Center(
                       child: CupertinoSlidingSegmentedControl<bool>(
                         groupValue: _isRegisterMode,
@@ -220,53 +205,49 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 22),
 
-                    // Username Input (iOS Inset Style)
                     const Text(
                       'Tên đăng nhập',
                       style: TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: systemSecondaryLabel,
-                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 7),
+                    const SizedBox(height: 6),
                     TextField(
                       controller: _usernameController,
                       textInputAction: TextInputAction.next,
                       style: const TextStyle(fontSize: 15, color: systemLabel),
                       decoration: InputDecoration(
                         hintText: 'Nhập tên đăng nhập',
-                        hintStyle: const TextStyle(color: systemTertiary, fontSize: 14.5),
-                        prefixIcon: const Icon(CupertinoIcons.person, color: systemBlue, size: 20),
+                        hintStyle: const TextStyle(color: systemTertiary, fontSize: 14),
+                        prefixIcon: const Icon(CupertinoIcons.person, color: systemBlue, size: 19),
                         filled: true,
                         fillColor: inputBackground,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(13),
+                          borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(13),
+                          borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: systemBlue, width: 1.5),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
 
-                    // Password Input (iOS Inset Style)
                     const Text(
                       'Mật khẩu',
                       style: TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: systemSecondaryLabel,
-                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 7),
+                    const SizedBox(height: 6),
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
@@ -275,15 +256,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(fontSize: 15, color: systemLabel),
                       decoration: InputDecoration(
                         hintText: 'Nhập mật khẩu',
-                        hintStyle: const TextStyle(color: systemTertiary, fontSize: 14.5),
-                        prefixIcon: const Icon(CupertinoIcons.lock, color: systemBlue, size: 20),
+                        hintStyle: const TextStyle(color: systemTertiary, fontSize: 14),
+                        prefixIcon: const Icon(CupertinoIcons.lock, color: systemBlue, size: 19),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
                                 ? CupertinoIcons.eye_slash
                                 : CupertinoIcons.eye,
                             color: systemTertiary,
-                            size: 20,
+                            size: 19,
                           ),
                           onPressed: () {
                             setState(() {
@@ -293,20 +274,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         filled: true,
                         fillColor: inputBackground,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(13),
+                          borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(13),
+                          borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(color: systemBlue, width: 1.5),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 20),
 
-                    // Primary iOS Button (Apple System Blue)
                     ElevatedButton(
                       onPressed: _isLoading ? null : _submit,
                       style: ElevatedButton.styleFrom(
@@ -315,13 +295,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: _isLoading
                           ? const SizedBox(
-                              width: 20,
-                              height: 20,
+                              width: 18,
+                              height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: Colors.white,
@@ -330,38 +310,35 @@ class _LoginScreenState extends State<LoginScreen> {
                           : Text(
                               _isRegisterMode ? 'Đăng ký' : 'Đăng nhập',
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 15.5,
                                 fontWeight: FontWeight.w600,
-                                letterSpacing: -0.3,
                               ),
                             ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
 
-                    // Fast Demo Account Button (iOS Tinted Style)
                     OutlinedButton.icon(
                       onPressed: _isLoading ? null : _fillDemoAccount,
-                      icon: const Icon(CupertinoIcons.bolt_fill, color: systemBlue, size: 16),
+                      icon: const Icon(CupertinoIcons.bolt_fill, color: systemBlue, size: 15),
                       label: const Text(
                         'Tài khoản mẫu (Test nhanh)',
                         style: TextStyle(
                           color: systemBlue,
                           fontWeight: FontWeight.w600,
-                          fontSize: 13.5,
+                          fontSize: 13,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: systemBlue.withAlpha(50), width: 1),
+                        side: BorderSide(color: systemBlue.withAlpha(40), width: 1),
                         backgroundColor: const Color(0xFFF2F7FF),
-                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
 
-                    // Switch Mode Text Link (Preserves test finders)
                     Center(
                       child: TextButton(
                         onPressed: () {
@@ -375,7 +352,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               : 'Chưa có tài khoản? Đăng ký ngay',
                           style: const TextStyle(
                             color: systemBlue,
-                            fontSize: 13.5,
+                            fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

@@ -18,39 +18,20 @@ void main() async {
   ));
 }
 
-// ============================================================================
-// 1. DESIGN TOKENS & COLOR PALETTE (UI/UX Pro Max & Taste Layer - Soft Modern)
-// ============================================================================
-/// Bảng màu chuẩn thiết kế hệ thống, tối ưu độ mềm mại và chiều sâu thị giác
 class AppColors {
-  /// Tiêu đề AppBar, text tiêu đề task chưa hoàn thành, các điểm nhấn quan trọng
-  static const Color deepNavy = Color(0xFF03045E);
-
-  /// Nút bấm Thêm công việc, background của Header card, icon active
-  static const Color primaryBlue = Color(0xFF0077B6);
-
-  /// Icon checkbox khi active, điểm nhấn thanh tiến độ (progress bar), badge
-  static const Color vibrantOcean = Color(0xFF00B4D8);
-
-  /// Đường viền mờ (borders), nền chip lọc chưa chọn, shadow mờ
-  static const Color softSky = Color(0xFF90E0EF);
-
-  /// Nền thẻ task hoàn thành, nền input field, nền các component phụ
-  static const Color iceBlueTint = Color(0xFFCAF0F8);
-
-  /// Nền các thẻ Card task chưa làm, text trên nền màu đậm
+  static const Color deepNavy = Color(0xFF1C1C1E);
+  static const Color primaryBlue = Color(0xFF007AFF);
+  static const Color vibrantOcean = Color(0xFF007AFF);
+  static const Color softSky = Color(0xFFE5E5EA);
+  static const Color iceBlueTint = Color(0xFFF2F7FF);
   static const Color pureWhite = Color(0xFFFFFFFF);
+  static const Color background = Color(0xFFF2F2F7);
 
-  /// Nền Scaffold tổng thể tạo độ tương phản dịu êm, chống mỏi mắt
-  static const Color background = Color(0xFFF8FAFD);
+  static const Color textMuted = Color(0xFF8E8E93);
+  static const Color editGreen = Color(0xFF34C759);
+  static const Color deleteRed = Color(0xFFFF3B30);
+  static const Color typeBadgeBg = Color(0xFFF2F7FF);
 
-  // --- Semantic Auxiliary Tokens ---
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color editGreen = Color(0xFF2A9D8F);
-  static const Color deleteRed = Color(0xFFE63946);
-  static const Color typeBadgeBg = Color(0xFFE0F2FE);
-
-  // --- Mức độ ưu tiên Tokens (Màu Pastel Hữu cơ Mềm mại) ---
   static const Color priorityEasyBg = Color(0xFFE8F5E9);
   static const Color priorityEasyText = Color(0xFF2E7D32);
   static const Color priorityMediumBg = Color(0xFFFFF3E0);
@@ -58,16 +39,14 @@ class AppColors {
   static const Color priorityHardBg = Color(0xFFFFEBEE);
   static const Color priorityHardText = Color(0xFFC62828);
 
-  // --- Gradients Thư thái & Tinh tế ---
   static const List<Color> oceanHeaderGradient = [
-    Color(0xFF023E8A),
-    Color(0xFF0077B6),
-    Color(0xFF0096C7),
+    Color(0xFF007AFF),
+    Color(0xFF0056B3),
   ];
 
   static const List<Color> buttonGradient = [
-    Color(0xFF0077B6),
-    Color(0xFF00B4D8),
+    Color(0xFF007AFF),
+    Color(0xFF007AFF),
   ];
 }
 
@@ -84,7 +63,7 @@ enum TaskFilter {
   const TaskFilter(this.label);
 }
 
-/// Model dữ liệu cho mỗi công việc bám sát Assignment
+/// Model dữ liệu cho mỗi công việc
 class TodoItem {
   final String id;
   String title;
@@ -382,7 +361,6 @@ class _TodoListScreenState extends State<TodoListScreen> {
 
   @override
   void dispose() {
-    // Quality Gate: Bắt buộc giải phóng controller để tránh rò rỉ bộ nhớ (NFR-05)
     _titleController.dispose();
     _contentController.dispose();
     _dateController.dispose();
@@ -559,7 +537,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
     );
   }
 
-  /// Chỉnh sửa công việc (FR-01 - Soft Modal BottomSheet)
+  /// Chỉnh sửa công việc (Modal BottomSheet)
   void _editTask(TodoItem task) {
     final editTitleCtrl = TextEditingController(text: task.title);
     final editContentCtrl = TextEditingController(text: task.content);
@@ -584,13 +562,13 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 decoration: const BoxDecoration(
                   color: AppColors.pureWhite,
                   borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(28.0),
+                    top: Radius.circular(24.0),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0x1A03045E),
-                      blurRadius: 28.0,
-                      offset: Offset(0, -6),
+                      color: Color(0x14000000),
+                      blurRadius: 24.0,
+                      offset: Offset(0, -4),
                     ),
                   ],
                 ),
@@ -601,14 +579,13 @@ class _TodoListScreenState extends State<TodoListScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Thanh kéo modal (Pill handle) thanh lịch
                         Center(
                           child: Container(
                             width: 36.0,
                             height: 4.0,
                             margin: const EdgeInsets.only(bottom: 16.0),
                             decoration: BoxDecoration(
-                              color: AppColors.softSky.withValues(alpha: 0.6),
+                              color: AppColors.softSky,
                               borderRadius: BorderRadius.circular(2.0),
                             ),
                           ),
@@ -918,7 +895,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
     return list;
   }
 
-  /// Màu sắc theo Mức độ ưu tiên (FR-06 & Taste Layer - Soft Pastels)
+  /// Màu sắc theo Mức độ ưu tiên
   static Color _getTypeTextColor(String type) {
     switch (type) {
       case 'Dễ':
@@ -991,7 +968,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 
   // ==========================================================================
-  // 5. UI COMPONENTS BUILDERS (Soft Modern Aesthetic)
+  // 5. UI COMPONENTS BUILDERS
   // ==========================================================================
 
   /// Component 1: Thẻ tóm tắt tiến độ (Progress Summary Card - FR-02 & Apple HIG Style)
@@ -1185,23 +1162,23 @@ class _TodoListScreenState extends State<TodoListScreen> {
     );
   }
 
-  /// Component 2: Form nhập công việc mới (Soft Card Surface - Khắc phục cảm giác khô khan)
+  /// Component 2: Form nhập công việc mới
   Widget _buildAddTaskForm() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         color: AppColors.pureWhite,
-        borderRadius: BorderRadius.circular(24.0),
+        borderRadius: BorderRadius.circular(20.0),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0C03045E),
-            blurRadius: 20.0,
-            offset: Offset(0, 6),
+            color: Color(0x0A000000),
+            blurRadius: 18.0,
+            offset: Offset(0, 4),
           ),
           BoxShadow(
-            color: Color(0x0403045E),
-            blurRadius: 6.0,
+            color: Color(0x04000000),
+            blurRadius: 4.0,
             offset: Offset(0, 1),
           ),
         ],
@@ -1211,13 +1188,12 @@ class _TodoListScreenState extends State<TodoListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header tiêu đề Form mềm mại
             Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(7.0),
                   decoration: BoxDecoration(
-                    color: AppColors.iceBlueTint.withValues(alpha: 0.5),
+                    color: AppColors.iceBlueTint,
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: const Icon(
@@ -1711,7 +1687,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
     );
   }
 
-  /// Component 6: Trạng thái trống (Empty State - Soft & Warm)
+  /// Component 6: Trạng thái trống (Empty State)
   Widget _buildEmptyState() {
     final bool isSearching = _searchQuery.trim().isNotEmpty;
     final bool isFiltered = _currentFilter != TaskFilter.all;
@@ -1784,7 +1760,6 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final int incompleteCount = totalCount - completedCount;
     final List<TodoItem> filteredList = _filteredTasks;
 
-    // Quality Gate: Bọc GestureDetector để chạm bên ngoài tự ẩn bàn phím (NFR-03)
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
@@ -1847,19 +1822,17 @@ class _TodoListScreenState extends State<TodoListScreen> {
             ),
           ],
         ),
-        // Quality Gate: SafeArea tránh notch và phím điều hướng hệ thống (NFR-03)
         body: SafeArea(
-          // Quality Gate: CustomScrollView tránh RenderFlex overflow khi mở bàn phím (NFR-03)
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics(),
             ),
             slivers: [
-              // 1. Thẻ thống kê tiến độ công việc (FR-02 & Soft Ocean Ambient)
+              // 1. Thẻ thống kê tiến độ công việc
               SliverToBoxAdapter(
                 child: _buildProgressCard(totalCount, completedCount),
               ),
-              // 2. Khu vực Form nhập liệu (FR-01, NFR-03 - Soft Card)
+              // 2. Khu vực Form nhập liệu
               SliverToBoxAdapter(
                 child: _showAddForm
                     ? _buildAddTaskForm()
@@ -1890,9 +1863,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
                         ),
                       ),
               ),
-              // 3. Thanh tìm kiếm theo từ khóa (FR-04 - Soft Capsule)
+              // 3. Thanh tìm kiếm
               SliverToBoxAdapter(child: _buildSearchBar()),
-              // 4. Thanh lọc trạng thái công việc (FR-03 - Soft Pill Segmented)
+              // 4. Thanh lọc trạng thái công việc
               SliverToBoxAdapter(
                 child: _buildFilterChips(
                   totalCount,
