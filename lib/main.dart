@@ -191,6 +191,21 @@ class _TaskFlowAppState extends State<TaskFlowApp> {
           primary: AppColors.primaryBlue,
           surface: AppColors.pureWhite,
         ),
+        datePickerTheme: DatePickerThemeData(
+          backgroundColor: Colors.white,
+          headerBackgroundColor: AppColors.primaryBlue,
+          headerForegroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        timePickerTheme: TimePickerThemeData(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
       ),
       home: _isLoggedIn
           ? TodoListScreen(
@@ -310,49 +325,29 @@ class _TodoListScreenState extends State<TodoListScreen> {
   }
 
   void _showLogoutDialog() {
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22.0),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.logout_rounded, color: AppColors.deleteRed, size: 24.0),
-            SizedBox(width: 10.0),
-            Text(
-              'Đăng xuất',
-              style: TextStyle(
-                color: AppColors.deepNavy,
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản "${widget.username}"?',
-          style: const TextStyle(
-            color: AppColors.deepNavy,
-            fontSize: 14.5,
-            height: 1.4,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Đăng xuất'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 6.0),
+          child: Text(
+            'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản "${widget.username}"?',
           ),
         ),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('HỦY', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text('HỦY'),
           ),
-          ElevatedButton(
+          CupertinoDialogAction(
+            isDestructiveAction: true,
             onPressed: () {
               Navigator.of(ctx).pop();
               widget.onLogout?.call();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.deleteRed,
-              foregroundColor: AppColors.pureWhite,
-            ),
-            child: const Text('ĐĂNG XUẤT', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('ĐĂNG XUẤT'),
           ),
         ],
       ),
@@ -412,8 +407,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
           content: Row(
             children: [
               const Icon(
-                Icons.check_circle_rounded,
-                color: AppColors.pureWhite,
+                CupertinoIcons.checkmark_circle_fill,
+                color: Color(0xFF34C759),
                 size: 20.0,
               ),
               const SizedBox(width: 10.0),
@@ -430,10 +425,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
               ),
             ],
           ),
-          backgroundColor: AppColors.primaryBlue,
+          backgroundColor: const Color(0xFF1C1C1E),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
+            borderRadius: BorderRadius.circular(14.0),
           ),
           duration: const Duration(seconds: 2),
         ),
@@ -461,8 +456,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
         content: const Row(
           children: [
             Icon(
-              Icons.check_circle_rounded,
-              color: AppColors.pureWhite,
+              CupertinoIcons.checkmark_circle_fill,
+              color: Color(0xFF34C759),
               size: 20.0,
             ),
             SizedBox(width: 10.0),
@@ -477,10 +472,10 @@ class _TodoListScreenState extends State<TodoListScreen> {
             ),
           ],
         ),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: const Color(0xFF1C1C1E),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(14.0),
         ),
         duration: const Duration(milliseconds: 1500),
       ),
@@ -513,14 +508,14 @@ class _TodoListScreenState extends State<TodoListScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        backgroundColor: AppColors.deepNavy,
+        backgroundColor: const Color(0xFF1C1C1E),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(14.0),
         ),
         action: SnackBarAction(
           label: 'HOÀN TÁC',
-          textColor: AppColors.vibrantOcean,
+          textColor: AppColors.primaryBlue,
           onPressed: () {
             setState(() {
               _tasks.insert(originalIndex, task);
@@ -673,30 +668,51 @@ class _TodoListScreenState extends State<TodoListScreen> {
                               setModalState(() => editDeadline = value),
                         ),
                         const SizedBox(height: 12.0),
-                        // Mức độ
-                        DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: editType,
-                          items: _typeOptions
-                              .map(
-                                (t) => DropdownMenuItem(
-                                  value: t,
-                                  child: Text(
-                                    t,
-                                    style: const TextStyle(fontSize: 14.0),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setModalState(() => editType = val);
-                            }
-                          },
-                          decoration: _inputDecoration(
-                            label: 'Mức độ',
-                            hint: 'Chọn mức độ',
-                          ),
+                        // Mức độ (iOS Cupertino Segmented)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Mức độ',
+                              style: TextStyle(
+                                color: Color(0xFF3C3C43),
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 6.0),
+                            SizedBox(
+                              width: double.infinity,
+                              child: CupertinoSlidingSegmentedControl<String>(
+                                groupValue: editType,
+                                backgroundColor: const Color(0xFFEFEFF4),
+                                thumbColor: Colors.white,
+                                children: {
+                                  for (final t in _typeOptions)
+                                    t: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                      child: Text(
+                                        t,
+                                        style: TextStyle(
+                                          fontSize: 13.0,
+                                          fontWeight: editType == t
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                          color: editType == t
+                                              ? _getTypeTextColor(t)
+                                              : const Color(0xFF8E8E93),
+                                        ),
+                                      ),
+                                    ),
+                                },
+                                onValueChanged: (val) {
+                                  if (val != null) {
+                                    setModalState(() => editType = val);
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 22.0),
                         // Nút Lưu thay đổi chuẩn Apple HIG
@@ -718,12 +734,16 @@ class _TodoListScreenState extends State<TodoListScreen> {
                               }
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
+                                SnackBar(
+                                  content: const Text(
                                     'Đã cập nhật công việc thành công!',
                                   ),
-                                  backgroundColor: AppColors.editGreen,
-                                  duration: Duration(seconds: 2),
+                                  backgroundColor: const Color(0xFF1C1C1E),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14.0),
+                                  ),
+                                  duration: const Duration(seconds: 2),
                                 ),
                               );
                             }
@@ -766,72 +786,24 @@ class _TodoListScreenState extends State<TodoListScreen> {
     final completedCount = _tasks.where((t) => t.isCompleted).length;
     if (completedCount == 0) return;
 
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22.0),
-        ),
-        title: const Row(
-          children: [
-            Icon(
-              Icons.delete_sweep_rounded,
-              color: AppColors.deleteRed,
-              size: 24.0,
-            ),
-            SizedBox(width: 10.0),
-            Text(
-              'Dọn dẹp công việc',
-              style: TextStyle(
-                color: AppColors.deepNavy,
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Bạn có chắc chắn muốn xóa tất cả $completedCount công việc đã hoàn thành?',
-          style: const TextStyle(
-            color: AppColors.deepNavy,
-            fontSize: 14.5,
-            height: 1.4,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Dọn dẹp công việc'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 6.0),
+          child: Text(
+            'Bạn có chắc chắn muốn xóa tất cả $completedCount công việc đã hoàn thành?',
           ),
         ),
-        actionsPadding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
         actions: [
-          TextButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 10.0,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-            ),
-            child: const Text(
-              'HỦY',
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: const Text('HỦY'),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.deleteRed,
-              foregroundColor: AppColors.pureWhite,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18.0,
-                vertical: 10.0,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-            ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
             onPressed: () {
               Navigator.pop(ctx);
               setState(() {
@@ -848,19 +820,16 @@ class _TodoListScreenState extends State<TodoListScreen> {
                   content: Text(
                     'Đã dọn dẹp $completedCount công việc đã hoàn thành!',
                   ),
-                  backgroundColor: AppColors.deepNavy,
+                  backgroundColor: const Color(0xFF1C1C1E),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
+                    borderRadius: BorderRadius.circular(14.0),
                   ),
                   duration: const Duration(seconds: 2),
                 ),
               );
             },
-            child: const Text(
-              'XÓA HẾT',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            child: const Text('XÓA HẾT'),
           ),
         ],
       ),
@@ -1260,83 +1229,89 @@ class _TodoListScreenState extends State<TodoListScreen> {
             ),
             const SizedBox(height: 12.0),
 
-            // Row 2 cột: Ngày thực hiện & Mức độ (Không viền cứng, không tràn pixel)
-            Row(
+            // Field 3: Ngày thực hiện
+            TextFormField(
+              controller: _dateController,
+              readOnly: true,
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2035),
+                  locale: const Locale('vi', 'VN'),
+                  helpText: 'CHỌN NGÀY THỰC HIỆN',
+                  cancelText: 'HỦY',
+                  confirmText: 'XÁC NHẬN',
+                );
+                if (picked != null) {
+                  setState(() {
+                    _dateController.text = _formatDate(picked);
+                  });
+                }
+              },
+              style: const TextStyle(
+                color: AppColors.deepNavy,
+                fontSize: 14.0,
+              ),
+              decoration: _inputDecoration(
+                label: 'Ngày thực hiện',
+                hint: 'dd/MM/yyyy',
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14.0,
+                  vertical: 12.0,
+                ),
+                suffixIcon: const Icon(
+                  Icons.calendar_today_rounded,
+                  size: 18.0,
+                  color: AppColors.primaryBlue,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12.0),
+
+            // Field 4: Mức độ (iOS Cupertino Segmented)
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Field 3: Ngày thực hiện
-                Expanded(
-                  child: TextFormField(
-                    controller: _dateController,
-                    readOnly: true,
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2020),
-                        lastDate: DateTime(2035),
-                        locale: const Locale('vi', 'VN'),
-                        helpText: 'CHỌN NGÀY THỰC HIỆN',
-                        cancelText: 'HỦY',
-                        confirmText: 'XÁC NHẬN',
-                      );
-                      if (picked != null) {
-                        setState(() {
-                          _dateController.text = _formatDate(picked);
-                        });
-                      }
-                    },
-                    style: const TextStyle(
-                      color: AppColors.deepNavy,
-                      fontSize: 14.0,
-                    ),
-                    decoration: _inputDecoration(
-                      label: 'Ngày thực hiện',
-                      hint: 'dd/MM/yyyy',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14.0,
-                        vertical: 12.0,
-                      ),
-                      suffixIcon: const Icon(
-                        Icons.calendar_today_rounded,
-                        size: 18.0,
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
+                const Text(
+                  'Mức độ',
+                  style: TextStyle(
+                    color: Color(0xFF3C3C43),
+                    fontSize: 13.0,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 12.0),
-
-                // Field 4: Mức độ
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    initialValue: _selectedType,
-                    items: _typeOptions
-                        .map(
-                          (t) => DropdownMenuItem(
-                            value: t,
-                            child: Text(
-                              t,
-                              style: const TextStyle(fontSize: 14.0),
-                              overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 6.0),
+                SizedBox(
+                  width: double.infinity,
+                  child: CupertinoSlidingSegmentedControl<String>(
+                    groupValue: _selectedType,
+                    backgroundColor: const Color(0xFFEFEFF4),
+                    thumbColor: Colors.white,
+                    children: {
+                      for (final t in _typeOptions)
+                        t: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            t,
+                            style: TextStyle(
+                              fontSize: 13.0,
+                              fontWeight: _selectedType == t
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                              color: _selectedType == t
+                                  ? _getTypeTextColor(t)
+                                  : const Color(0xFF8E8E93),
                             ),
                           ),
-                        )
-                        .toList(),
-                    onChanged: (val) {
+                        ),
+                    },
+                    onValueChanged: (val) {
                       if (val != null) {
                         setState(() => _selectedType = val);
                       }
                     },
-                    decoration: _inputDecoration(
-                      label: 'Mức độ',
-                      hint: 'Chọn mức độ',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14.0,
-                        vertical: 12.0,
-                      ),
-                    ),
                   ),
                 ),
               ],
