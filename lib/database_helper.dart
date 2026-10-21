@@ -2,11 +2,56 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
   static Database? _database;
+
+  // Web in-memory store so testing on Web works instantly without WASM/Worker issues
+  final List<Map<String, dynamic>> _webUsers = [
+    {
+      'id': 'admin_user_01',
+      'username': 'admin',
+      'password': '123456',
+      'created_at': DateTime.now().toIso8601String(),
+    }
+  ];
+
+  final List<Map<String, dynamic>> _webTasks = [
+    {
+      'id': 'seed_task_01',
+      'user_id': 'admin_user_01',
+      'title': 'Hoàn thành bài tập lớn Flutter',
+      'content': 'Triển khai Đăng nhập, Session Persistence và SQLite',
+      'date': 'Hôm nay',
+      'type': 'Khó',
+      'is_completed': 0,
+      'created_at': DateTime.now().toIso8601String(),
+      'deadline': null,
+    },
+    {
+      'id': 'seed_task_02',
+      'user_id': 'admin_user_01',
+      'title': 'Thiết kế giao diện Soft Modern',
+      'content': 'Tối ưu độ tương phản, bo góc mềm mại và bảng màu thư thái',
+      'date': 'Hôm nay',
+      'type': 'Trung bình',
+      'is_completed': 1,
+      'created_at': DateTime.now().toIso8601String(),
+      'deadline': null,
+    },
+    {
+      'id': 'seed_task_03',
+      'user_id': 'admin_user_01',
+      'title': 'Kiểm thử ứng dụng trên iOS & Web',
+      'content': 'Đảm bảo không lỗi trên Chrome và chạy mượt mà trên iPhone',
+      'date': 'Ngày mai',
+      'type': 'Dễ',
+      'is_completed': 0,
+      'created_at': DateTime.now().toIso8601String(),
+      'deadline': null,
+    },
+  ];
 
   DatabaseHelper._internal();
 
@@ -17,39 +62,21 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase([String dbName = 'taskflow.db']) async {
-    if (kIsWeb) {
-      try {
-        databaseFactory = databaseFactoryFfiWeb;
-        return await openDatabase(
-          dbName,
-          version: 1,
-          onCreate: _onCreate,
-        );
-      } catch (_) {
-        databaseFactory = databaseFactoryFfiWebNoWebWorker;
-        return await openDatabase(
-          dbName,
-          version: 1,
-          onCreate: _onCreate,
-        );
+    if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
+      if (databaseFactoryOrNull == null) {
+        sqfliteFfiInit();
+        databaseFactory = databaseFactoryFfi;
       }
-    } else {
-      if (Platform.isWindows || Platform.isLinux) {
-        if (databaseFactoryOrNull == null) {
-          sqfliteFfiInit();
-          databaseFactory = databaseFactoryFfi;
-        }
-      }
-
-      final dbPath = await getDatabasesPath();
-      final path = join(dbPath, dbName);
-
-      return await openDatabase(
-        path,
-        version: 1,
-        onCreate: _onCreate,
-      );
     }
+
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, dbName);
+
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _onCreate,
+    );
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -128,11 +155,27 @@ class DatabaseHelper {
 
   // User Operations
   Future<int> insertUser(Map<String, dynamic> row) async {
+    if (kIsWeb) {
+      final exists = _webUsers.any((u) => u['username'] == row['username']);
+      if (exists) {
+        throw StateError('Tên đăng nhập đã tồn tại');
+      }
+      _webUsers.removeWhere((u) => u['id'] == row['id']);
+      _webUsers.add(Map<String, dynamic>.from(row));
+      return 1;
+    }
     final db = await database;
     return await db.insert('users', row, conflictAlgorithm: ConflictAlgorithm.fail);
   }
 
   Future<Map<String, dynamic>?> getUserByUsername(String username) async {
+    if (kIsWeb) {
+      try {
+        return _webUsers.firstWhere((u) => u['username'] == username);
+      } catch (_) {
+        return null;
+      }
+    }
     final db = await database;
     final results = await db.query(
       'users',
@@ -148,11 +191,19 @@ class DatabaseHelper {
 
   // Task Operations
   Future<int> insertTask(Map<String, dynamic> row) async {
+    if (kIsWeb) {
+      _webTasks.removeWhere((t) => t['id'] == row['id']);
+      _webTasks.insert(0, Map<String, dynamic>.from(row));
+      return 1;
+    }
     final db = await database;
     return await db.insert('tasks', row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, dynamic>>> getTasksByUserId(String userId) async {
+    if (kIsWeb) {
+      return _webTasks.where((t) => t['user_id'] == userId).toList();
+    }
     final db = await database;
     return await db.query(
       'tasks',
@@ -163,6 +214,14 @@ class DatabaseHelper {
   }
 
   Future<int> updateTask(Map<String, dynamic> row) async {
+    if (kIsWeb) {
+      final index = _webTasks.indexWhere((t) => t['id'] == row['id']);
+      if (index != -1) {
+        _webTasks[index] = Map<String, dynamic>.from(row);
+        return 1;
+      }
+      return 0;
+    }
     final db = await database;
     final id = row['id'];
     return await db.update(
@@ -174,6 +233,10 @@ class DatabaseHelper {
   }
 
   Future<int> deleteTask(String id) async {
+    if (kIsWeb) {
+      _webTasks.removeWhere((t) => t['id'] == id);
+      return 1;
+    }
     final db = await database;
     return await db.delete(
       'tasks',
@@ -183,6 +246,10 @@ class DatabaseHelper {
   }
 
   Future<int> clearCompletedTasks(String userId) async {
+    if (kIsWeb) {
+      _webTasks.removeWhere((t) => t['user_id'] == userId && t['is_completed'] == 1);
+      return 1;
+    }
     final db = await database;
     return await db.delete(
       'tasks',

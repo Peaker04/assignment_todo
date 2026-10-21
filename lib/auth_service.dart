@@ -41,13 +41,11 @@ class AuthService {
 
     Map<String, dynamic>? user;
     try {
-      user = await DatabaseHelper.instance
-          .getUserByUsername(trimmedUsername)
-          .timeout(const Duration(seconds: 6));
-    } catch (e) {
+      user = await DatabaseHelper.instance.getUserByUsername(trimmedUsername);
+    } catch (_) {
       return (
         success: false,
-        error: 'Lỗi truy cập cơ sở dữ liệu: $e',
+        error: 'Tên đăng nhập hoặc mật khẩu không chính xác',
         userId: null,
       );
     }
@@ -91,15 +89,9 @@ class AuthService {
 
     Map<String, dynamic>? existingUser;
     try {
-      existingUser = await DatabaseHelper.instance
-          .getUserByUsername(trimmedUsername)
-          .timeout(const Duration(seconds: 6));
-    } catch (e) {
-      return (
-        success: false,
-        error: 'Lỗi truy cập cơ sở dữ liệu: $e',
-        userId: null,
-      );
+      existingUser = await DatabaseHelper.instance.getUserByUsername(trimmedUsername);
+    } catch (_) {
+      existingUser = null;
     }
     if (existingUser != null) {
       return (

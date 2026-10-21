@@ -77,12 +77,12 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       }
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi kết nối cơ sở dữ liệu: $e'),
-          backgroundColor: const Color(0xFFE63946),
+        const SnackBar(
+          content: Text('Không thể đăng nhập, vui lòng thử lại'),
+          backgroundColor: Color(0xFFE63946),
         ),
       );
     } finally {
