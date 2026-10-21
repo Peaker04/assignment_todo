@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'database_helper.dart';
@@ -721,71 +722,52 @@ class _TodoListScreenState extends State<TodoListScreen> {
                           ),
                         ),
                         const SizedBox(height: 22.0),
-                        // Nút Lưu thay đổi mềm mại
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: AppColors.buttonGradient,
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16.0),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primaryBlue.withValues(
-                                  alpha: 0.28,
-                                ),
-                                blurRadius: 14.0,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              if (editFormKey.currentState?.validate() ??
-                                  false) {
-                                setState(() {
-                                  task.title = editTitleCtrl.text.trim();
-                                  task.content = editContentCtrl.text.trim();
-                                  task.date = editDateCtrl.text.trim();
-                                  task.type = editType;
-                                  task.deadline = editDeadline;
-                                });
-                                if (widget.persistToDatabase) {
-                                  try {
-                                    DatabaseHelper.instance.updateTask(task.toMap(widget.userId));
-                                  } catch (_) {}
-                                }
-                                Navigator.pop(ctx);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Đã cập nhật công việc thành công!',
-                                    ),
-                                    backgroundColor: AppColors.editGreen,
-                                    duration: Duration(seconds: 2),
-                                  ),
-                                );
+                        // Nút Lưu thay đổi chuẩn Apple HIG
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            if (editFormKey.currentState?.validate() ??
+                                false) {
+                              setState(() {
+                                task.title = editTitleCtrl.text.trim();
+                                task.content = editContentCtrl.text.trim();
+                                task.date = editDateCtrl.text.trim();
+                                task.type = editType;
+                                task.deadline = editDeadline;
+                              });
+                              if (widget.persistToDatabase) {
+                                try {
+                                  DatabaseHelper.instance.updateTask(task.toMap(widget.userId));
+                                } catch (_) {}
                               }
-                            },
-                            icon: const Icon(Icons.save_rounded, size: 20.0),
-                            label: const Text(
-                              'LƯU THAY ĐỔI',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.3,
-                              ),
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Đã cập nhật công việc thành công!',
+                                  ),
+                                  backgroundColor: AppColors.editGreen,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(CupertinoIcons.checkmark_alt, size: 19.0),
+                          label: const Text(
+                            'LƯU THAY ĐỔI',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.2,
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              foregroundColor: AppColors.pureWhite,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14.0,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16.0),
-                              ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            foregroundColor: AppColors.pureWhite,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 14.0,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.0),
                             ),
                           ),
                         ),
@@ -1012,150 +994,108 @@ class _TodoListScreenState extends State<TodoListScreen> {
   // 5. UI COMPONENTS BUILDERS (Soft Modern Aesthetic)
   // ==========================================================================
 
-  /// Component 1: Thẻ tóm tắt tiến độ (Progress Summary Card - FR-02 & Soft Ocean Ambient)
+  /// Component 1: Thẻ tóm tắt tiến độ (Progress Summary Card - FR-02 & Apple HIG Style)
   Widget _buildProgressCard(int total, int completed) {
     final double progress = total > 0 ? (completed / total) : 0.0;
     final int percent = (progress * 100).round();
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 10.0),
+      margin: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: AppColors.oceanHeaderGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24.0),
-        boxShadow: [
+        color: AppColors.pureWhite,
+        borderRadius: BorderRadius.circular(18.0),
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.primaryBlue.withValues(alpha: 0.25),
-            blurRadius: 20.0,
-            offset: const Offset(0, 8),
+            color: Color(0x0A000000),
+            blurRadius: 18.0,
+            offset: Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Color(0x04000000),
+            blurRadius: 4.0,
+            offset: Offset(0, 1),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24.0),
-        child: Stack(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Ambient glowing circles tạo độ mềm mại, chiều sâu hữu cơ
-            Positioned(
-              right: -24,
-              top: -24,
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.pureWhite.withValues(alpha: 0.08),
-                ),
-              ),
-            ),
-            Positioned(
-              left: -30,
-              bottom: -40,
-              child: Container(
-                width: 130,
-                height: 130,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.vibrantOcean.withValues(alpha: 0.15),
-                ),
-              ),
-            ),
-
-            // Nội dung chính
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 7.0,
-                                  height: 7.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppColors.vibrantOcean,
-                                  ),
-                                ),
-                                const SizedBox(width: 6.0),
-                                const Expanded(
-                                  child: Text(
-                                    'TIẾN ĐỘ CÔNG VIỆC',
-                                    style: TextStyle(
-                                      color: AppColors.iceBlueTint,
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 1.0,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                      Row(
+                        children: [
+                          Container(
+                            width: 8.0,
+                            height: 8.0,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primaryBlue,
                             ),
-                            const SizedBox(height: 6.0),
-                            Text(
-                              '$completed / $total việc hoàn thành',
-                              style: const TextStyle(
-                                color: AppColors.pureWhite,
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -0.3,
-                              ),
+                          ),
+                          const SizedBox(width: 7.0),
+                          const Text(
+                            'TIẾN ĐỘ CÔNG VIỆC',
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12.0),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14.0,
-                          vertical: 6.0,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.pureWhite.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(16.0),
-                          border: Border.all(
-                            color: AppColors.pureWhite.withValues(alpha: 0.25),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Text(
-                          '$percent%',
-                          style: const TextStyle(
-                            color: AppColors.pureWhite,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                          ),
+                      const SizedBox(height: 6.0),
+                      Text(
+                        '$completed / $total việc hoàn thành',
+                        style: const TextStyle(
+                          color: AppColors.deepNavy,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.4,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16.0),
-                  // Thanh tiến độ bo tròn hoàn toàn
-                  ClipRRect(
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12.0,
+                    vertical: 5.0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.iceBlueTint,
                     borderRadius: BorderRadius.circular(12.0),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 8.0,
-                      backgroundColor: AppColors.pureWhite.withValues(
-                        alpha: 0.2,
-                      ),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.vibrantOcean,
-                      ),
+                  ),
+                  child: Text(
+                    '$percent%',
+                    style: const TextStyle(
+                      color: AppColors.primaryBlue,
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.3,
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+            // Thanh tiến độ iOS bo tròn
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6.0),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 7.0,
+                backgroundColor: const Color(0xFFE5E5EA),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppColors.primaryBlue,
+                ),
               ),
             ),
           ],
@@ -1433,48 +1373,25 @@ class _TodoListScreenState extends State<TodoListScreen> {
             ),
             const SizedBox(height: 18.0),
 
-            // Nút Thêm công việc bo tròn mềm mại kết hợp Gradient
-            Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: AppColors.buttonGradient,
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
+            // Nút Thêm công việc phong cách Apple System Blue
+            ElevatedButton.icon(
+              onPressed: _addTask,
+              icon: const Icon(CupertinoIcons.plus_circle, size: 19.0),
+              label: const Text(
+                'THÊM CÔNG VIỆC',
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
                 ),
-                borderRadius: BorderRadius.circular(16.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryBlue.withValues(alpha: 0.28),
-                    blurRadius: 14.0,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
               ),
-              child: ElevatedButton(
-                onPressed: _addTask,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  foregroundColor: AppColors.pureWhite,
-                  padding: const EdgeInsets.symmetric(vertical: 14.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_circle_outline_rounded, size: 20.0),
-                    SizedBox(width: 8.0),
-                    Text(
-                      'THÊM CÔNG VIỆC',
-                      style: TextStyle(
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.4,
-                      ),
-                    ),
-                  ],
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryBlue,
+                foregroundColor: AppColors.pureWhite,
+                padding: const EdgeInsets.symmetric(vertical: 14.0),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14.0),
                 ),
               ),
             ),
@@ -1484,20 +1401,13 @@ class _TodoListScreenState extends State<TodoListScreen> {
     );
   }
 
-  /// Component 3: Thanh tìm kiếm mềm mại (FR-04 - Soft Capsule Search Bar)
+  /// Component 3: Thanh tìm kiếm (FR-04 - iOS Cupertino Search Bar)
   Widget _buildSearchBar() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 8.0),
       decoration: BoxDecoration(
-        color: AppColors.pureWhite,
-        borderRadius: BorderRadius.circular(18.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0803045E),
-            blurRadius: 12.0,
-            offset: Offset(0, 3),
-          ),
-        ],
+        color: const Color(0xFFE5E5EA),
+        borderRadius: BorderRadius.circular(12.0),
       ),
       child: TextField(
         controller: _searchController,
@@ -1506,24 +1416,24 @@ class _TodoListScreenState extends State<TodoListScreen> {
             _searchQuery = val;
           });
         },
-        style: const TextStyle(fontSize: 14.0, color: AppColors.deepNavy),
+        style: const TextStyle(fontSize: 14.5, color: Color(0xFF000000)),
         decoration: InputDecoration(
           hintText: 'Tìm kiếm công việc theo từ khóa...',
           hintStyle: const TextStyle(
-            fontSize: 13.0,
-            color: AppColors.textMuted,
+            fontSize: 13.5,
+            color: Color(0xFF8E8E93),
           ),
           prefixIcon: const Icon(
-            Icons.search_rounded,
-            size: 20.0,
-            color: AppColors.primaryBlue,
+            CupertinoIcons.search,
+            size: 19.0,
+            color: Color(0xFF8E8E93),
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(
                     Icons.clear_rounded,
                     size: 18.0,
-                    color: AppColors.textMuted,
+                    color: Color(0xFF8E8E93),
                   ),
                   tooltip: 'Xóa tìm kiếm',
                   onPressed: () {
@@ -1536,136 +1446,68 @@ class _TodoListScreenState extends State<TodoListScreen> {
               : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16.0,
-            vertical: 13.0,
+            horizontal: 14.0,
+            vertical: 11.0,
           ),
         ),
       ),
     );
   }
 
-  /// Component 4: Bộ lọc trạng thái (FR-03 - Soft Pill Segmented Filter)
+  /// Component 4: Bộ lọc trạng thái (FR-03 - Cupertino Sliding Segmented Control)
   Widget _buildFilterChips(int total, int incomplete, int completed) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      padding: const EdgeInsets.all(4.0),
-      decoration: BoxDecoration(
-        color: AppColors.iceBlueTint.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      child: Row(
-        children: TaskFilter.values.map((filter) {
-          final bool isSelected = _currentFilter == filter;
-          int count = total;
-          if (filter == TaskFilter.incomplete) count = incomplete;
-          if (filter == TaskFilter.completed) count = completed;
-
-          return Expanded(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    _currentFilter = filter;
-                  });
-                },
-                borderRadius: BorderRadius.circular(16.0),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
-                  constraints: const BoxConstraints(minHeight: 48.0),
-                  padding: const EdgeInsets.symmetric(vertical: 9.0),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.pureWhite
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16.0),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppColors.deepNavy.withValues(alpha: 0.08),
-                              blurRadius: 10.0,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          filter.label,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: isSelected
-                                ? AppColors.primaryBlue
-                                : AppColors.textMuted,
-                            fontSize: 13.0,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6.0),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6.5,
-                          vertical: 1.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primaryBlue
-                              : AppColors.pureWhite.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: Text(
-                          '$count',
-                          style: TextStyle(
-                            color: isSelected
-                                ? AppColors.pureWhite
-                                : AppColors.textMuted,
-                            fontSize: 11.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+      child: CupertinoSlidingSegmentedControl<TaskFilter>(
+        groupValue: _currentFilter,
+        backgroundColor: const Color(0xFFE5E5EA),
+        thumbColor: Colors.white,
+        children: {
+          for (final filter in TaskFilter.values)
+            filter: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 7.5),
+              child: Text(
+                filter.label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _currentFilter == filter
+                      ? const Color(0xFF000000)
+                      : const Color(0xFF8E8E93),
+                  fontSize: 13.0,
+                  fontWeight: _currentFilter == filter
+                      ? FontWeight.w600
+                      : FontWeight.w500,
                 ),
               ),
             ),
-          );
-        }).toList(),
+        },
+        onValueChanged: (val) {
+          if (val != null) {
+            setState(() {
+              _currentFilter = val;
+            });
+          }
+        },
       ),
     );
   }
 
-  /// Component 5: Thẻ Task Item (FR-01, FR-06 & Taste Layer - Vòng tròn Checkbox & Soft Floating Card)
+  /// Component 5: Thẻ Task Item (FR-01, FR-06 & iOS Inset Grouped Style)
   Widget _buildTaskItem(TodoItem task) {
     final bool isDone = task.isCompleted;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 240),
-      curve: Curves.easeOutCubic,
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 5.0),
       decoration: BoxDecoration(
-        color: isDone
-            ? AppColors.pureWhite.withValues(alpha: 0.75)
-            : AppColors.pureWhite,
-        borderRadius: BorderRadius.circular(20.0),
-        border: Border.all(
-          color: isDone
-              ? AppColors.softSky.withValues(alpha: 0.3)
-              : AppColors.pureWhite,
-          width: 1.0,
-        ),
-        boxShadow: [
+        color: isDone ? const Color(0xFFF9F9FB) : Colors.white,
+        borderRadius: BorderRadius.circular(14.0),
+        boxShadow: const [
           BoxShadow(
-            color: isDone ? const Color(0x0503045E) : const Color(0x0C03045E),
-            blurRadius: isDone ? 8.0 : 16.0,
-            offset: Offset(0, isDone ? 2 : 5),
+            color: Color(0x06000000),
+            blurRadius: 10.0,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -1674,14 +1516,14 @@ class _TodoListScreenState extends State<TodoListScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Bên trái: Checkbox tròn mềm mại (Circular Checkbox - Khắc phục cảm giác cứng nhắc)
+            // Bên trái: Checkbox tròn chuẩn iOS Cupertino
             IconButton(
               icon: Icon(
                 isDone
-                    ? Icons.check_circle_rounded
-                    : Icons.radio_button_unchecked_rounded,
-                color: isDone ? AppColors.vibrantOcean : AppColors.softSky,
-                size: 26.0,
+                    ? CupertinoIcons.checkmark_circle_fill
+                    : CupertinoIcons.circle,
+                color: isDone ? const Color(0xFF34C759) : const Color(0xFFC7C7CC),
+                size: 24.0,
               ),
               tooltip: isDone ? 'Đánh dấu chưa xong' : 'Đánh dấu hoàn thành',
               onPressed: () => _toggleTask(task.id),
@@ -1884,7 +1726,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
       subtitle = 'Hãy chuyển sang bộ lọc khác hoặc thêm công việc mới.';
     } else {
       title = 'Chưa có công việc nào!';
-      subtitle = 'Hãy tạo công việc mới bằng biểu mẫu phía trên nhé ✨';
+      subtitle = 'Hãy tạo công việc mới bằng nút phía trên.';
     }
 
     return Container(
@@ -1894,20 +1736,15 @@ class _TodoListScreenState extends State<TodoListScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 84.0,
-            height: 84.0,
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.iceBlueTint.withValues(alpha: 0.8),
-                  AppColors.iceBlueTint.withValues(alpha: 0.2),
-                ],
-              ),
+            width: 76.0,
+            height: 76.0,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE5F1FF),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isSearching ? Icons.search_off_rounded : Icons.spa_rounded,
-              size: 44.0,
+              isSearching ? CupertinoIcons.search : CupertinoIcons.square_list,
+              size: 38.0,
               color: AppColors.primaryBlue,
             ),
           ),
@@ -1969,9 +1806,9 @@ class _TodoListScreenState extends State<TodoListScreen> {
             'TODOLIST',
             style: TextStyle(
               color: AppColors.deepNavy,
-              fontSize: 22.0,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.2,
+              fontSize: 20.0,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
             ),
           ),
           actions: [
@@ -1990,19 +1827,19 @@ class _TodoListScreenState extends State<TodoListScreen> {
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12.0,
-                    vertical: 5.0,
+                    horizontal: 10.0,
+                    vertical: 4.0,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.iceBlueTint.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(14.0),
+                    color: const Color(0xFFE5E5EA),
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Text(
                     '${filteredList.length} việc',
                     style: const TextStyle(
-                      color: AppColors.primaryBlue,
+                      color: Color(0xFF1C1C1E),
                       fontSize: 12.0,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -2033,12 +1870,21 @@ class _TodoListScreenState extends State<TodoListScreen> {
                         ),
                         child: FilledButton.icon(
                           onPressed: () => setState(() => _showAddForm = true),
-                          icon: const Icon(Icons.add_rounded),
-                          label: const Text('Tạo công việc'),
+                          icon: const Icon(CupertinoIcons.plus, size: 18.0),
+                          label: const Text(
+                            'Tạo công việc',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15.0,
+                            ),
+                          ),
                           style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            foregroundColor: Colors.white,
                             minimumSize: const Size.fromHeight(48.0),
+                            elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.0),
+                              borderRadius: BorderRadius.circular(14.0),
                             ),
                           ),
                         ),
