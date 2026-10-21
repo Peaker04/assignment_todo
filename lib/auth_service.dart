@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'database_helper.dart';
 
@@ -38,7 +39,18 @@ class AuthService {
       );
     }
 
-    final user = await DatabaseHelper.instance.getUserByUsername(trimmedUsername);
+    Map<String, dynamic>? user;
+    try {
+      user = await DatabaseHelper.instance
+          .getUserByUsername(trimmedUsername)
+          .timeout(const Duration(seconds: 6));
+    } catch (e) {
+      return (
+        success: false,
+        error: 'Lỗi truy cập cơ sở dữ liệu: $e',
+        userId: null,
+      );
+    }
     if (user == null || user['password'] != password) {
       return (
         success: false,
@@ -77,7 +89,18 @@ class AuthService {
       );
     }
 
-    final existingUser = await DatabaseHelper.instance.getUserByUsername(trimmedUsername);
+    Map<String, dynamic>? existingUser;
+    try {
+      existingUser = await DatabaseHelper.instance
+          .getUserByUsername(trimmedUsername)
+          .timeout(const Duration(seconds: 6));
+    } catch (e) {
+      return (
+        success: false,
+        error: 'Lỗi truy cập cơ sở dữ liệu: $e',
+        userId: null,
+      );
+    }
     if (existingUser != null) {
       return (
         success: false,

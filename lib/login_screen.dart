@@ -47,35 +47,47 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    if (_isRegisterMode) {
-      final res = await AuthService.instance.register(username, password);
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+    try {
+      if (_isRegisterMode) {
+        final res = await AuthService.instance.register(username, password);
+        if (!mounted) return;
 
-      if (res.success) {
-        widget.onLoginSuccess();
+        if (res.success) {
+          widget.onLoginSuccess();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(res.error ?? 'Đăng ký thất bại'),
+              backgroundColor: const Color(0xFFE63946),
+            ),
+          );
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(res.error ?? 'Đăng ký thất bại'),
-            backgroundColor: const Color(0xFFE63946),
-          ),
-        );
+        final res = await AuthService.instance.login(username, password);
+        if (!mounted) return;
+
+        if (res.success) {
+          widget.onLoginSuccess();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(res.error ?? 'Đăng nhập thất bại'),
+              backgroundColor: const Color(0xFFE63946),
+            ),
+          );
+        }
       }
-    } else {
-      final res = await AuthService.instance.login(username, password);
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
-
-      if (res.success) {
-        widget.onLoginSuccess();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(res.error ?? 'Đăng nhập thất bại'),
-            backgroundColor: const Color(0xFFE63946),
-          ),
-        );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi kết nối cơ sở dữ liệu: $e'),
+          backgroundColor: const Color(0xFFE63946),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }

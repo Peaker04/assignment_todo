@@ -18,22 +18,38 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase([String dbName = 'taskflow.db']) async {
     if (kIsWeb) {
-      databaseFactory = databaseFactoryFfiWeb;
-    } else if (Platform.isWindows || Platform.isLinux) {
-      if (databaseFactoryOrNull == null) {
-        sqfliteFfiInit();
-        databaseFactory = databaseFactoryFfi;
+      try {
+        databaseFactory = databaseFactoryFfiWeb;
+        return await openDatabase(
+          dbName,
+          version: 1,
+          onCreate: _onCreate,
+        );
+      } catch (_) {
+        databaseFactory = databaseFactoryFfiWebNoWebWorker;
+        return await openDatabase(
+          dbName,
+          version: 1,
+          onCreate: _onCreate,
+        );
       }
+    } else {
+      if (Platform.isWindows || Platform.isLinux) {
+        if (databaseFactoryOrNull == null) {
+          sqfliteFfiInit();
+          databaseFactory = databaseFactoryFfi;
+        }
+      }
+
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, dbName);
+
+      return await openDatabase(
+        path,
+        version: 1,
+        onCreate: _onCreate,
+      );
     }
-
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, dbName);
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
   }
 
   Future<void> _onCreate(Database db, int version) async {
